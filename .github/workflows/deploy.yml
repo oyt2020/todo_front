@@ -28,6 +28,28 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME}}/todo-frontend:latest
 
+        build-args: |
+          VITE_API_BASE_URL=http://${{ secrets.GCP_BACKEND_ID }}:8080
+
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
+    - name: Deploy to GCP
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secretis.GCP_HOST }}
+        username: ${{ secrets.GCP_USERNAME }}
+        port: 22
+        script: |
+          docker stop todo-frontend || true
+          docker rm todo-frontend || true
+          
+          docker pull ${{ secrets.DOCKER_USERNAME }}/todo-frontend:latest
+          
+          docker run -d \
+            --name todo-frontend \
+            -p 80:80 \
+            --restart always \
+            ${{ secrets.DOCKER_USERNAME }}/todo-frontend:latest
+          
+          docker image prune -f
