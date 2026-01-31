@@ -29,7 +29,7 @@ jobs:
         tags: ${{ secrets.DOCKER_USERNAME}}/todo-frontend:latest
 
         build-args: |
-          VITE_API_BASE_URL=http://${{ secrets.GCP_BACKEND_ID }}:8080
+          VITE_API_BASE_URL=http://${{ secrets.GCP_HOST }}:8080
 
         cache-from: type=gha
         cache-to: type=gha,mode=max
