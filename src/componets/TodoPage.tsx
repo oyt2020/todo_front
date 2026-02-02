@@ -42,8 +42,9 @@ function TodoPage() {
 
     const handleUpdate = async (id : number) => {
         const res = await updateTodo(id, editTitle);
-        console.log("Update Res:", res)
+
         if (res.success) {
+            console.log("Update Res:", res)
             const list = await getTodos();
             setTodos(list.data);
             setEditingId(null);
