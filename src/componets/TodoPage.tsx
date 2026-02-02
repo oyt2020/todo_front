@@ -1,10 +1,12 @@
 import {useEffect,useState} from "react";
-import {getTodos, createTodo, completeTodo, deleteTodo} from "../api/todoApi";
+import {getTodos, createTodo, completeTodo, deleteTodo, updateTodo} from "../api/todoApi";
 import type {Todo} from "../types/todo";
 
 function TodoPage() {
     const [todos, setTodos] = useState<Todo[]>([]);
     const [title,setTitle] = useState("");
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editTitle, setEditTitle] = useState("");
 
     useEffect(() => {
         getTodos().then((res)=> {
@@ -33,6 +35,27 @@ function TodoPage() {
     const list = await getTodos();
     setTodos(list.data);}
 
+    const handleEditClick = (id:number, currentTitle : string) => {
+        setEditingId(id);
+        setEditTitle(currentTitle);
+    }
+
+    const handleUpdate = async (id : number) => {
+        const res = await updateTodo(id, editTitle);
+        if (res.success) {
+            const list = await getTodos();
+            setTodos(list.data);
+            setEditingId(null);
+            setTitle("");
+        }
+
+    }
+
+    const handleCancelClick = () => {
+        setEditingId(null);
+        setEditTitle(""); // 원래 값으로 복구
+    };
+
     return (
         <div>
             <h1>Todo</h1>
@@ -46,11 +69,30 @@ function TodoPage() {
             <ul>
                 {todos.map((todo) => (
                     <li key={todo.id}>
-                        {todo.title} ({todo.status})
-                        {todo.status === "PENDING" && (
-                            <button onClick={()=> handleCompleted(todo.id)}>완료</button>
-                        )}
-                        <button onClick={()=>handleDelete(todo.id)}>삭제</button>
+                        {editingId === todo.id ? (
+                            <>
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                 />
+                                <button onClick={()=> handleUpdate(todo.id)}>저장</button>
+                                <button onClick={()=>handleCancelClick()}>취소</button>
+                            </>
+                        ) : (
+                            <>
+                                {todo.title} ({todo.status})
+                                {todo.status === "PENDING" && (
+                                    <button onClick={()=> handleCompleted(todo.id)}>완료</button>
+                                )}
+                                <button onClick={()=>handleDelete(todo.id)}>삭제</button>
+                                <button onClick={()=>handleEditClick(todo.id,todo.title)}>수정</button>
+                            </>
+
+                        )
+
+                        }
+
                     </li>
                 ))}
             </ul>

@@ -32,3 +32,14 @@ export async function deleteTodo(id:number){
         method: "DELETE"
     });
 }
+
+export async function updateTodo(id:number,title:string){
+    const res = await fetch(`${BASE_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({title}),
+    });
+    return res.json();
+}
