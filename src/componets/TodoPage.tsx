@@ -62,8 +62,8 @@ function TodoPage() {
             <h1>Todo</h1>
 
             <input
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
             />
             <button onClick={handleCreate}>추가</button>
 
@@ -74,8 +74,8 @@ function TodoPage() {
                             <>
                                 <input
                                     type="text"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
                                  />
                                 <button onClick={()=> handleUpdate(todo.id)}>저장</button>
                                 <button onClick={()=>handleCancelClick()}>취소</button>
