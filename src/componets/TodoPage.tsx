@@ -1,5 +1,5 @@
 import {useEffect,useState} from "react";
-import {getTodos, createTodo, completeTodo, deleteTodo, updateTodo} from "../api/todoApi";
+import {getTodos, createTodo, completeTodo, deleteTodo, updateTodo, pendingTodo} from "../api/todoApi";
 import type {Todo} from "../types/todo";
 
 function TodoPage() {
@@ -29,6 +29,12 @@ function TodoPage() {
         const list = await getTodos();
         setTodos(list.data);
     };
+
+    const handlePending = async (id: number) => {
+        await pendingTodo(id);
+        const list = await getTodos();
+        setTodos(list.data);
+    }
 
     const handleDelete = async (id: number) => {
     await deleteTodo(id);
@@ -85,6 +91,9 @@ function TodoPage() {
                                 {todo.title} ({todo.status})
                                 {todo.status === "PENDING" && (
                                     <button onClick={()=> handleCompleted(todo.id)}>완료</button>
+                                )}
+                                {todo.status === "COMPLETED" && (
+                                    <button onClick={()=>handlePending(todo.id)}>미완료</button>
                                 )}
                                 <button onClick={()=>handleDelete(todo.id)}>삭제</button>
                                 <button onClick={()=>handleEditClick(todo.id,todo.title)}>수정</button>

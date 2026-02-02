@@ -27,6 +27,13 @@ export async function completeTodo(id:number){
     return res.json();
 }
 
+export async function pendingTodo(id:number){
+    const res = await fetch(`${BASE_URL}/${id}/pending`, {
+        method: "PATCH",
+    })
+    return res.json();
+}
+
 export async function deleteTodo(id:number){
     await fetch(`${BASE_URL}/${id}`, {
         method: "DELETE"
