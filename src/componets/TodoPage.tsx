@@ -41,6 +41,7 @@ function TodoPage() {
     }
 
     const handleUpdate = async (id : number) => {
+        console.log("변경 된 값 : ",editTitle);
         const res = await updateTodo(id, editTitle);
 
         if (res.success) {
@@ -48,7 +49,6 @@ function TodoPage() {
             const list = await getTodos();
             setTodos(list.data);
             setEditingId(null);
-            setTitle("");
         }
     }
 
@@ -62,8 +62,8 @@ function TodoPage() {
             <h1>Todo</h1>
 
             <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
             />
             <button onClick={handleCreate}>추가</button>
 
