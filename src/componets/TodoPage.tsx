@@ -63,6 +63,17 @@ function TodoPage() {
         setEditTitle(""); // 원래 값으로 복구
     };
 
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("ko-KR",{
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
     return (
         <div>
             <h1>Todo</h1>
@@ -88,6 +99,10 @@ function TodoPage() {
                             </>
                         ) : (
                             <>
+                                <div style={{ fontSize: '0.8rem', color: 'gray'}}>
+                                    작성: {formatDate(todo.createdAt)}
+                                    {todo.createdAt !== todo.updatedAt && ` (수정됨 : ${formatDate(todo.updatedAt)})`}
+                                </div>
                                 {todo.title} ({todo.status})
                                 {todo.status === "PENDING" && (
                                     <button onClick={()=> handleCompleted(todo.id)}>완료</button>
