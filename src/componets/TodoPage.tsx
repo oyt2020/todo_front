@@ -1,21 +1,26 @@
-import {useEffect,useState} from "react";
-import {getTodos, createTodo, completeTodo, deleteTodo, updateTodo, pendingTodo} from "../api/todoApi";
-import type {Todo} from "../types/todo";
+import { useEffect, useState } from "react";
+import { getTodos, createTodo, completeTodo, deleteTodo, updateTodo, pendingTodo } from "../api/todoApi";
+import type { Todo } from "../types/todo";
+import TodoInput from "./TodoInput";
+import TodoItem from "./TodoItem";
+import { styles } from "../styles/todoStyles";
+
+type FilterType = "ALL" | "PENDING" | "COMPLETED";
 
 function TodoPage() {
     const [todos, setTodos] = useState<Todo[]>([]);
-    const [title,setTitle] = useState("");
-    const [editingId, setEditingId] = useState<number | null>(null);
-    const [editTitle, setEditTitle] = useState("");
+    const [title, setTitle] = useState("");
+    const [filter, setFilter] = useState<FilterType>("ALL");
 
     useEffect(() => {
-        getTodos().then((res)=> {
-            console.log("GET Todos:",res);
+        getTodos().then((res) => {
+            console.log("GET Todos:", res);
             setTodos(res.data);
         });
-    },[]);
+    }, []);
 
     const handleCreate = async () => {
+        if (!title.trim()) return;
         const res = await createTodo(title);
         if (res.success) {
             const list = await getTodos();
@@ -24,7 +29,7 @@ function TodoPage() {
         }
     };
 
-    const handleCompleted = async (id : number) => {
+    const handleCompleted = async (id: number) => {
         await completeTodo(id);
         const list = await getTodos();
         setTodos(list.data);
@@ -34,96 +39,88 @@ function TodoPage() {
         await pendingTodo(id);
         const list = await getTodos();
         setTodos(list.data);
-    }
+    };
 
     const handleDelete = async (id: number) => {
-    await deleteTodo(id);
-    const list = await getTodos();
-    setTodos(list.data);}
+        await deleteTodo(id);
+        const list = await getTodos();
+        setTodos(list.data);
+    };
 
-    const handleEditClick = (id:number, currentTitle : string) => {
-        setEditingId(id);
-        setEditTitle(currentTitle);
-    }
-
-    const handleUpdate = async (id : number) => {
-        console.log("변경 된 값 : ",editTitle);
-        const res = await updateTodo(id, editTitle);
-
+    const handleUpdate = async (id: number, newTitle: string) => {
+        const res = await updateTodo(id, newTitle);
         if (res.success) {
-            console.log("Update Res:", res)
             const list = await getTodos();
             setTodos(list.data);
-            setEditingId(null);
         }
-    }
-
-    const handleCancelClick = () => {
-        setEditingId(null);
-        setEditTitle(""); // 원래 값으로 복구
     };
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("ko-KR",{
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
+    const filteredTodos = todos.filter((todo) => {
+        if (filter === "ALL") return true;
+        if (filter === "PENDING") return todo.status === "PENDING";
+        if (filter === "COMPLETED") return todo.status === "COMPLETED";
+        return true;
+    });
 
     return (
-        <div>
-            <h1>Todo</h1>
+        <div style={styles.container}>
+            <h1 style={styles.title}>Todo</h1>
 
-            <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-            />
-            <button onClick={handleCreate}>추가</button>
+            <TodoInput title={title} setTitle={setTitle} onAdd={handleCreate} />
 
-            <ul>
-                {todos.map((todo) => (
-                    <li key={todo.id}>
-                        {editingId === todo.id ? (
-                            <>
-                                <input
-                                    type="text"
-                                    value={editTitle}
-                                    onChange={(e) => setEditTitle(e.target.value)}
-                                 />
-                                <button onClick={()=> handleUpdate(todo.id)}>저장</button>
-                                <button onClick={()=>handleCancelClick()}>취소</button>
-                            </>
-                        ) : (
-                            <>
-                                <div style={{ fontSize: '0.8rem', color: 'gray'}}>
-                                    작성: {formatDate(todo.createdAt)}
-                                    {todo.createdAt !== todo.updatedAt && ` (수정됨 : ${formatDate(todo.updatedAt)})`}
-                                </div>
-                                {todo.title} ({todo.status})
-                                {todo.status === "PENDING" && (
-                                    <button onClick={()=> handleCompleted(todo.id)}>완료</button>
-                                )}
-                                {todo.status === "COMPLETED" && (
-                                    <button onClick={()=>handlePending(todo.id)}>미완료</button>
-                                )}
-                                <button onClick={()=>handleDelete(todo.id)}>삭제</button>
-                                <button onClick={()=>handleEditClick(todo.id,todo.title)}>수정</button>
-                            </>
+            <div style={styles.filterContainer}>
+                <button
+                    style={{
+                        ...styles.filterButton,
+                        ...(filter === "ALL" ? styles.activeFilter : {}),
+                    }}
+                    onClick={() => setFilter("ALL")}
+                >
+                    전체 ({todos.length})
+                </button>
+                <button
+                    style={{
+                        ...styles.filterButton,
+                        ...(filter === "PENDING" ? styles.activeFilter : {}),
+                    }}
+                    onClick={() => setFilter("PENDING")}
+                >
+                    진행중 ({todos.filter(t => t.status === "PENDING").length})
+                </button>
+                <button
+                    style={{
+                        ...styles.filterButton,
+                        ...(filter === "COMPLETED" ? styles.activeFilter : {}),
+                    }}
+                    onClick={() => setFilter("COMPLETED")}
+                >
+                    완료 ({todos.filter(t => t.status === "COMPLETED").length})
+                </button>
+            </div>
 
-                        )
-
-                        }
-
-                    </li>
+            <ul style={styles.todoList}>
+                {filteredTodos.map((todo) => (
+                    <TodoItem
+                        key={todo.id}
+                        todo={todo}
+                        onComplete={handleCompleted}
+                        onPending={handlePending}
+                        onDelete={handleDelete}
+                        onUpdate={handleUpdate}
+                    />
                 ))}
             </ul>
+
+            {filteredTodos.length === 0 && (
+                <div style={styles.emptyMessage}>
+                    {filter === "ALL" && "할 일이 없습니다."}
+                    {filter === "PENDING" && "진행중인 할 일이 없습니다."}
+                    {filter === "COMPLETED" && "완료된 할 일이 없습니다."}
+                </div>
+            )}
+
         </div>
     );
-
 }
 
 export default TodoPage;
