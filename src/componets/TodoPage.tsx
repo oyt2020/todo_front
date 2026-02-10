@@ -11,6 +11,7 @@ function TodoPage() {
     const [todos, setTodos] = useState<Todo[]>([]);
     const [title, setTitle] = useState("");
     const [filter, setFilter] = useState<FilterType>("ALL");
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         getTodos().then((res) => {
@@ -60,14 +61,39 @@ function TodoPage() {
         if (filter === "PENDING") return todo.status === "PENDING";
         if (filter === "COMPLETED") return todo.status === "COMPLETED";
         return true;
+    }).filter((todo) => {
+        if (!searchTerm.trim()) return true; // 검색어가 없으면 모두 표시
+        return todo.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
     return (
         <div style={styles.container}>
+            {/* 1. 검색창: 상단 오른쪽에 절대 위치(absolute)로 고정 */}
+            <div style={styles.searchContainer}>
+                <input
+                    style={styles.searchInput}
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="할 일 검색..."
+                />
+                {searchTerm && (
+                    <button
+                        style={styles.clearButton}
+                        onClick={() => setSearchTerm("")}
+                    >
+                        ×
+                    </button>
+                )}
+            </div>
+
+            {/* 2. 제목: 중앙 정렬 (CSS에서 paddingRight 제거 필수) */}
             <h1 style={styles.title}>Todo</h1>
 
+            {/* 3. 입력창 영역 */}
             <TodoInput title={title} setTitle={setTitle} onAdd={handleCreate} />
 
+            {/* 4. 필터 버튼 영역 */}
             <div style={styles.filterContainer}>
                 <button
                     style={{
@@ -98,6 +124,14 @@ function TodoPage() {
                 </button>
             </div>
 
+            {/* 5. 검색 결과 안내 (검색 중일 때만 표시) */}
+            {searchTerm && (
+                <div style={styles.searchInfo}>
+                    "{searchTerm}" 검색 결과: {filteredTodos.length}개
+                </div>
+            )}
+
+            {/* 6. 할 일 목록 */}
             <ul style={styles.todoList}>
                 {filteredTodos.map((todo) => (
                     <TodoItem
@@ -111,14 +145,20 @@ function TodoPage() {
                 ))}
             </ul>
 
+            {/* 7. 데이터가 없을 때 메시지 */}
             {filteredTodos.length === 0 && (
                 <div style={styles.emptyMessage}>
-                    {filter === "ALL" && "할 일이 없습니다."}
-                    {filter === "PENDING" && "진행중인 할 일이 없습니다."}
-                    {filter === "COMPLETED" && "완료된 할 일이 없습니다."}
+                    {searchTerm ? (
+                        `"${searchTerm}"에 대한 검색 결과가 없습니다.`
+                    ) : (
+                        <>
+                            {filter === "ALL" && "할 일이 없습니다."}
+                            {filter === "PENDING" && "진행중인 할 일이 없습니다."}
+                            {filter === "COMPLETED" && "완료된 할 일이 없습니다."}
+                        </>
+                    )}
                 </div>
             )}
-
         </div>
     );
 }
