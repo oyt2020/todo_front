@@ -43,7 +43,7 @@ function TodoPage() {
         setTodos(list.data);
         // 선택된 할 일 업데이트
         if (selectedTodo?.id === id) {
-            const updated = list.data.find(t => t.id === id);
+            const updated = list.data.find((t:Todo) => t.id === id);
             setSelectedTodo(updated || null);
         }
     };
@@ -54,7 +54,7 @@ function TodoPage() {
         setTodos(list.data);
         // 선택된 할 일 업데이트
         if (selectedTodo?.id === id) {
-            const updated = list.data.find(t => t.id === id);
+            const updated = list.data.find((t:Todo) => t.id === id);
             setSelectedTodo(updated || null);
         }
     };
@@ -76,7 +76,7 @@ function TodoPage() {
             setTodos(list.data);
             // 선택된 할 일 업데이트
             if (selectedTodo?.id === id) {
-                const updated = list.data.find(t => t.id === id);
+                const updated = list.data.find((t:Todo) => t.id === id);
                 setSelectedTodo(updated || null);
             }
         }
