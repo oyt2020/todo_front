@@ -14,12 +14,14 @@ function TodoItem({ todo, onComplete, onPending, onDelete, onUpdate }: TodoItemP
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState(todo.title);
 
-    const handleSave = () => {
+    const handleSave = (e : React.MouseEvent) => {
+        e.stopPropagation();
         onUpdate(todo.id, editTitle);
         setIsEditing(false);
     };
 
-    const handleCancel = () => {
+    const handleCancel = (e : React.MouseEvent) => {
+        e.stopPropagation();
         setEditTitle(todo.title);
         setIsEditing(false);
     };
@@ -49,6 +51,7 @@ function TodoItem({ todo, onComplete, onPending, onDelete, onUpdate }: TodoItemP
                         style={styles.editInput}
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
+                        onClick={(e)=>e.stopPropagation()}
                     />
                     <div style={styles.buttonGroup}>
                         <button

@@ -12,7 +12,11 @@ function TodoPage() {
     const [title, setTitle] = useState("");
     const [filter, setFilter] = useState<FilterType>("ALL");
     const [searchTerm, setSearchTerm] = useState("");
-
+    const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null); // 👈 선택된 할 일 상태 추가
+    const [scheduledDate, setScheduledDate] = useState(()=>{
+        const today = new Date();
+        return today.toISOString().split("T")[0];
+    })
     useEffect(() => {
         getTodos().then((res) => {
             console.log("GET Todos:", res);
@@ -22,11 +26,14 @@ function TodoPage() {
 
     const handleCreate = async () => {
         if (!title.trim()) return;
-        const res = await createTodo(title);
+        const res = await createTodo(title,scheduledDate);
         if (res.success) {
             const list = await getTodos();
             setTodos(list.data);
             setTitle("");
+
+            const today = new Date();
+            setScheduledDate(today.toISOString().split("T")[0]);
         }
     };
 
@@ -34,18 +41,32 @@ function TodoPage() {
         await completeTodo(id);
         const list = await getTodos();
         setTodos(list.data);
+        // 선택된 할 일 업데이트
+        if (selectedTodo?.id === id) {
+            const updated = list.data.find(t => t.id === id);
+            setSelectedTodo(updated || null);
+        }
     };
 
     const handlePending = async (id: number) => {
         await pendingTodo(id);
         const list = await getTodos();
         setTodos(list.data);
+        // 선택된 할 일 업데이트
+        if (selectedTodo?.id === id) {
+            const updated = list.data.find(t => t.id === id);
+            setSelectedTodo(updated || null);
+        }
     };
 
     const handleDelete = async (id: number) => {
         await deleteTodo(id);
         const list = await getTodos();
         setTodos(list.data);
+        // 삭제된 할 일이 선택되어 있었다면 선택 해제
+        if (selectedTodo?.id === id) {
+            setSelectedTodo(null);
+        }
     };
 
     const handleUpdate = async (id: number, newTitle: string) => {
@@ -53,22 +74,46 @@ function TodoPage() {
         if (res.success) {
             const list = await getTodos();
             setTodos(list.data);
+            // 선택된 할 일 업데이트
+            if (selectedTodo?.id === id) {
+                const updated = list.data.find(t => t.id === id);
+                setSelectedTodo(updated || null);
+            }
         }
     };
 
-    const filteredTodos = todos.filter((todo) => {
-        if (filter === "ALL") return true;
-        if (filter === "PENDING") return todo.status === "PENDING";
-        if (filter === "COMPLETED") return todo.status === "COMPLETED";
-        return true;
-    }).filter((todo) => {
-        if (!searchTerm.trim()) return true; // 검색어가 없으면 모두 표시
-        return todo.title.toLowerCase().includes(searchTerm.toLowerCase());
-    });
+    // 할 일 클릭 핸들러
+    const handleTodoClick = (todo: Todo) => {
+        setSelectedTodo(todo);
+    };
+
+    // 필터링 + 검색 로직
+    const filteredTodos = todos
+        .filter((todo) => {
+            if (filter === "ALL") return true;
+            if (filter === "PENDING") return todo.status === "PENDING";
+            if (filter === "COMPLETED") return todo.status === "COMPLETED";
+            return true;
+        })
+        .filter((todo) => {
+            if (!searchTerm.trim()) return true;
+            return todo.title.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
 
     return (
         <div style={styles.container}>
-            {/* 1. 검색창: 상단 오른쪽에 절대 위치(absolute)로 고정 */}
+            {/* 검색창 */}
             <div style={styles.searchContainer}>
                 <input
                     style={styles.searchInput}
@@ -87,13 +132,17 @@ function TodoPage() {
                 )}
             </div>
 
-            {/* 2. 제목: 중앙 정렬 (CSS에서 paddingRight 제거 필수) */}
             <h1 style={styles.title}>Todo</h1>
 
-            {/* 3. 입력창 영역 */}
-            <TodoInput title={title} setTitle={setTitle} onAdd={handleCreate} />
+            <TodoInput
+                title={title}
+                setTitle={setTitle}
+                onAdd={handleCreate}
+                scheduledDate = {scheduledDate}
+                setScheduledDate = {setScheduledDate}
+            />
 
-            {/* 4. 필터 버튼 영역 */}
+            {/* 필터 버튼 */}
             <div style={styles.filterContainer}>
                 <button
                     style={{
@@ -124,41 +173,113 @@ function TodoPage() {
                 </button>
             </div>
 
-            {/* 5. 검색 결과 안내 (검색 중일 때만 표시) */}
+            {/* 검색 결과 안내 */}
             {searchTerm && (
                 <div style={styles.searchInfo}>
                     "{searchTerm}" 검색 결과: {filteredTodos.length}개
                 </div>
             )}
 
-            {/* 6. 할 일 목록 */}
-            <ul style={styles.todoList}>
-                {filteredTodos.map((todo) => (
-                    <TodoItem
-                        key={todo.id}
-                        todo={todo}
-                        onComplete={handleCompleted}
-                        onPending={handlePending}
-                        onDelete={handleDelete}
-                        onUpdate={handleUpdate}
-                    />
-                ))}
-            </ul>
+            {/* 메인 컨텐츠: 할 일 목록 + 상세 정보 */}
+            <div style={styles.mainContent}>
+                {/* 왼쪽: 할 일 목록 */}
+                <div style={{
+                    ...styles.todoListContainer,
+                    ...(selectedTodo ? styles.todoListContainerWithDetail : {})
+                }}>
+                    <ul style={styles.todoList}>
+                        {filteredTodos.map((todo) => (
+                            <div
+                                key={todo.id}
+                                onClick={() => handleTodoClick(todo)}
+                                style={{
+                                    cursor: 'pointer',
+                                    ...(selectedTodo?.id === todo.id ? styles.selectedTodoItem : {})
+                                }}
+                            >
+                                <TodoItem
+                                    todo={todo}
+                                    onComplete={handleCompleted}
+                                    onPending={handlePending}
+                                    onDelete={handleDelete}
+                                    onUpdate={handleUpdate}
+                                />
+                            </div>
+                        ))}
+                    </ul>
 
-            {/* 7. 데이터가 없을 때 메시지 */}
-            {filteredTodos.length === 0 && (
-                <div style={styles.emptyMessage}>
-                    {searchTerm ? (
-                        `"${searchTerm}"에 대한 검색 결과가 없습니다.`
-                    ) : (
-                        <>
-                            {filter === "ALL" && "할 일이 없습니다."}
-                            {filter === "PENDING" && "진행중인 할 일이 없습니다."}
-                            {filter === "COMPLETED" && "완료된 할 일이 없습니다."}
-                        </>
+                    {filteredTodos.length === 0 && (
+                        <div style={styles.emptyMessage}>
+                            {searchTerm ? (
+                                `"${searchTerm}"에 대한 검색 결과가 없습니다.`
+                            ) : (
+                                <>
+                                    {filter === "ALL" && "할 일이 없습니다."}
+                                    {filter === "PENDING" && "진행중인 할 일이 없습니다."}
+                                    {filter === "COMPLETED" && "완료된 할 일이 없습니다."}
+                                </>
+                            )}
+                        </div>
                     )}
                 </div>
-            )}
+
+                {/* 오른쪽: 상세 정보 */}
+                {selectedTodo && (
+                    <div style={styles.detailPanel}>
+                        <div style={styles.detailHeader}>
+                            <h2 style={styles.detailTitle}>상세 정보</h2>
+                            <button
+                                style={styles.closeButton}
+                                onClick={() => setSelectedTodo(null)}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div style={styles.detailContent}>
+                            <div style={styles.detailSection}>
+                                <h3 style={styles.detailLabel}>제목</h3>
+                                <p style={styles.detailText}>{selectedTodo.title}</p>
+                            </div>
+
+                            <div style={styles.detailSection}>
+                                <h3 style={styles.detailLabel}>상태</h3>
+                                <span style={{
+                                    ...styles.statusBadge,
+                                    ...(selectedTodo.status === "COMPLETED"
+                                        ? styles.completedBadge
+                                        : styles.pendingBadge)
+                                }}>
+                                    {selectedTodo.status === "COMPLETED" ? "완료" : "진행중"}
+                                </span>
+                            </div>
+
+                            <div style={styles.detailSection}>
+                                <h3 style={styles.detailLabel}>작성일</h3>
+                                <p style={styles.detailText}>{formatDate(selectedTodo.createdAt)}</p>
+                            </div>
+
+                            {selectedTodo.createdAt !== selectedTodo.updatedAt && (
+                                <div style={styles.detailSection}>
+                                    <h3 style={styles.detailLabel}>수정일</h3>
+                                    <p style={styles.detailText}>{formatDate(selectedTodo.updatedAt)}</p>
+                                </div>
+                            )}
+
+                            {/* 나중에 추가할 정보들 */}
+                            <div style={styles.detailSection}>
+                                <h3 style={styles.detailLabel}>장소</h3>
+                                <p style={styles.detailText}>추후 추가 예정</p>
+                            </div>
+
+                            <div style={styles.detailSection}>
+                                <h3 style={styles.detailLabel}>메모</h3>
+                                <p style={styles.detailText}>추후 추가 예정</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

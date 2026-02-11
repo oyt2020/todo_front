@@ -61,6 +61,7 @@ export const styles: { [key: string]: React.CSSProperties } = {
 
     searchInput: {
         width: '200px',
+        maxWidth :'200px',
         padding: '10px 14px',
         fontSize: '0.95rem',
         border: '2px solid #e0e0e0',
@@ -115,6 +116,10 @@ export const styles: { [key: string]: React.CSSProperties } = {
         color: '#7f8c8d',
         backgroundColor: '#ecf0f1',
         borderRadius: '6px',
+
+        wordBreak: 'break-all',
+        maxWidth: '100%',
+
     },
 
     todoList: {
@@ -265,5 +270,113 @@ export const styles: { [key: string]: React.CSSProperties } = {
         padding: '40px',
         fontSize: '1.1rem',
         color: '#95a5a6',
+    },
+    mainContent: {
+        display: 'flex',
+        gap: '20px',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        transition: 'all 0.3s ease',
+    },
+
+    todoListContainer: {
+        flex: 1,
+        transition: 'all 0.3s ease',
+    },
+
+    todoListContainerWithDetail: {
+        maxWidth: '600px',  // 상세 정보가 열리면 왼쪽 목록 너비 제한
+    },
+
+    selectedTodoItem: {
+        transform: 'translateX(-10px)',  // 선택된 항목 살짝 왼쪽으로
+        transition: 'transform 0.3s ease',
+    },
+
+    detailPanel: {
+        width: '400px',
+        backgroundColor: 'white',
+        border: '1px solid #e0e0e0',
+        borderRadius: '12px',
+        padding: '24px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        animation: 'slideIn 0.3s ease',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+        position: 'sticky',
+        top: '20px',
+    },
+
+    detailHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '24px',
+        borderBottom: '2px solid #e0e0e0',
+        paddingBottom: '12px',
+    },
+
+    detailTitle: {
+        fontSize: '1.5rem',
+        color: '#2c3e50',
+        margin: 0,
+    },
+
+    closeButton: {
+        fontSize: '1.5rem',
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: '#95a5a6',
+        cursor: 'pointer',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        transition: 'all 0.2s',
+    },
+
+    detailContent: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+    },
+
+    detailSection: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+    },
+
+    detailLabel: {
+        fontSize: '0.9rem',
+        color: '#7f8c8d',
+        margin: 0,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+    },
+
+    detailText: {
+        fontSize: '1.1rem',
+        color: '#2c3e50',
+        margin: 0,
+        wordBreak: 'break-word',
+    },
+    // 기존 스타일에 추가
+    datePickerContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+    },
+
+    dateInput: {
+        padding: '12px 16px',
+        fontSize: '1rem',
+        border: '2px solid #e0e0e0',
+        borderRadius: '8px',
+        outline: 'none',
+        cursor: 'pointer',
+        backgroundColor: 'white',
+        transition: 'border-color 0.2s',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        minWidth: '150px',
     },
 };

@@ -8,13 +8,16 @@ export async function getTodos(){
     return res.json();
 }
 
-export async function createTodo(title:string){
+export async function createTodo(title:string, scheduledDate ?: string){
     const res = await fetch(BASE_URL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({title}),
+        body: JSON.stringify({
+            title,
+            scheduledDate: scheduledDate || null
+        }),
     });
 
     return res.json();
