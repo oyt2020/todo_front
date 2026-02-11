@@ -26,6 +26,26 @@ function TodoItem({ todo, onComplete, onPending, onDelete, onUpdate }: TodoItemP
         setIsEditing(false);
     };
 
+    const handleEditClick = (e: React.MouseEvent) => {
+        e.stopPropagation();  // 👈 추가: 이벤트 전파 막기
+        setIsEditing(true);
+    };
+
+    const handleComplete = (e: React.MouseEvent) => {
+        e.stopPropagation();  // 👈 추가: 이벤트 전파 막기
+        onComplete(todo.id);
+    };
+
+    const handlePending = (e: React.MouseEvent) => {
+        e.stopPropagation();  // 👈 추가: 이벤트 전파 막기
+        onPending(todo.id);
+    };
+
+    const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();  // 👈 추가: 이벤트 전파 막기
+        onDelete(todo.id);
+    };
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString("ko-KR", {
@@ -102,7 +122,7 @@ function TodoItem({ todo, onComplete, onPending, onDelete, onUpdate }: TodoItemP
                         {todo.status === "PENDING" && (
                             <button
                                 style={{ ...styles.button, ...styles.completeButton }}
-                                onClick={() => onComplete(todo.id)}
+                                onClick={handleComplete}
                             >
                                 ✓ 완료
                             </button>
@@ -110,20 +130,20 @@ function TodoItem({ todo, onComplete, onPending, onDelete, onUpdate }: TodoItemP
                         {todo.status === "COMPLETED" && (
                             <button
                                 style={{ ...styles.button, ...styles.pendingButton }}
-                                onClick={() => onPending(todo.id)}
+                                onClick={handlePending}
                             >
                                 ↺ 미완료
                             </button>
                         )}
                         <button
                             style={{ ...styles.button, ...styles.editButton }}
-                            onClick={() => setIsEditing(true)}
+                            onClick={handleEditClick}
                         >
                             ✎ 수정
                         </button>
                         <button
                             style={{ ...styles.button, ...styles.deleteButton }}
-                            onClick={() => onDelete(todo.id)}
+                            onClick={handleDelete}
                         >
                             × 삭제
                         </button>

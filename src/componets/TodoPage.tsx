@@ -84,7 +84,12 @@ function TodoPage() {
 
     // 할 일 클릭 핸들러
     const handleTodoClick = (todo: Todo) => {
-        setSelectedTodo(todo);
+        if (selectedTodo?.id === todo.id) {
+            setSelectedTodo(null);
+        } else {
+            // 다른 할 일을 클릭하면 해당 할 일 열기
+            setSelectedTodo(todo);
+        }
     };
 
     // 필터링 + 검색 로직
